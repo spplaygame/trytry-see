@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>教育浮誇升官大作戰</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background: #fdfdfd;
+      color: #333;
+      padding: 2em;
+      max-width: 720px;
+      margin: auto;
+    }
+    textarea, input {
+      width: 100%;
+      margin-bottom: 1em;
+      padding: 0.6em;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.5em 1em;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-bottom: 1.5em;
+    }
+    h2 {
+      margin-top: 2em;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.3em;
+    }
+    .card {
+      font-size: 1.2em;
+      background: #f2f2f2;
+      padding: 1em;
+      border-radius: 0.5em;
+      margin: 1em 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .highlight {
+      color: #d93;
+      font-weight: bold;
+    }
+    ul {
+      padding-left: 1.5em;
+    }
+  </style>
+</head>
+<body>
+  <h1>✨ 教育浮誇升官大作戰 ✨</h1>
+
+  <label for="name">暱稱：</label>
+  <input id="name" placeholder="匿名粉筆俠"/>
+
+  <label for="idea">輸入你的教育理念：</label>
+  <textarea id="idea" rows="4" placeholder="在學習生態系中鍛造全人發展矩陣..."></textarea>
+
+  <button onclick="evaluate()">開始評鑑！</button>
+
+  <div id="result" class="card"></div>
+
+  <h2>🎰 Buzzword 抽卡結果</h2>
+  <div id="card" class="card"></div>
+
+  <h2>📚 個人成就展示牆</h2>
+  <ul id="history"></ul>
+
+<script>
+const buzzWords = [
+  "未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙","頂規旗艦",
+  "𓆏級","AI 驅動","區塊鏈化","四倍速","學習生態系","人才煉金術",
+  "智慧雲端校園","真·全人發展矩陣","素養元件庫","潛能加速器",
+  "教育黑科技","共振增幅","鏈結升頻","高維封裝","深度賦靈","裂變式擴散"
+];
+
+const levels = [
+  { threshold: 0, title: "✏️ 粉筆見習生" },
+  { threshold: 40, title: "📚 概念積木工程師" },
+  { threshold: 80, title: "🧪 素養擴增技術員" },
+  { threshold: 120, title: "🚀 教育語言煉金師" },
+  { threshold: 160, title: "🌀 超維度教育黑術師" },
+  { threshold: 200, title: "👑 終極浮誇神格召喚師" }
+];
+
+function evaluate() {
+  const name = (document.getElementById("name").value.trim() || "匿名粉筆俠").slice(0, 12);
+  const idea = document.getElementById("idea").value.trim();
+  if (!idea) return alert("請先輸入一段教育理念！");
+
+  // 分數計算
+  const buzzCount = buzzWords.reduce((acc, word) => {
+    const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    const matches = idea.match(re);
+    return acc + (matches ? matches.length : 0);
+  }, 0);
+  const score = Math.round(Math.min(idea.length * 0.5, 60) + buzzCount * 12 + Math.random() * 20);
+  const level = levels.reverse().find(l => score >= l.threshold).title;
+
+  // 顯示評鑑結果
+  document.getElementById("result").innerHTML =
+    ${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>;
+
+  // 抽卡機展示
+  const cardPool = [
+    "高維共振者（SR）", "全人煉金魔導師（SSR）", "素養裂變導演（R）",
+    "宇宙級願景召喚師（UR）", "教育黑洞鑄造師（LR）", "跨域連結術士（SSR）"
+  ];
+  const card = cardPool[Math.floor(Math.random() * cardPool.length)];
+  document.getElementById("card").innerHTML =
+    你剛剛抽到了：<span class="highlight">${card}</span> 🎉;
+
+  // 儲存成就到 localStorage
+  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
+  history.push({ name, score, level, card });
+  localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]").slice(-10); // 顯示近10筆
+  const ul = document.getElementById("history");
+  ul.innerHTML = "";
+  history.reverse().forEach(entry => {
+    const li = document.createElement("li");
+    li.innerHTML = ${entry.name}｜${entry.score} 分｜${entry.level}｜抽到：<strong>${entry.card}</strong>;
+    ul.appendChild(li);
+  });
+}
+
+// 初始載入展示牆
+renderHistory();
+</script>
+</body>
+</html>
