@@ -44,9 +44,6 @@
     ul {
       padding-left: 1.5em;
     }
-    em {
-      font-style: italic;
-    }
   </style>
 </head>
 <body>
@@ -58,7 +55,7 @@
   <label for="idea">輸入你的教育理念：</label>
   <textarea id="idea" rows="4" placeholder="在學習生態系中鍛造全人發展矩陣..."></textarea>
 
-  <button onclick="evaluate()">開始評鑑！</button>
+  <button onclick="startEvaluation()">開始評鑑！</button>
 
   <div id="result" class="card"></div>
 
@@ -85,48 +82,39 @@ const levels = [
   { threshold: 200, title: "👑 終極浮誇神格召喚師" }
 ];
 
-function evaluate() {
-  const nameInput = document.getElementById("name");
-  const ideaInput = document.getElementById("idea");
-  const resultBox = document.getElementById("result");
-  const cardBox = document.getElementById("card");
+function startEvaluation() {
+  const name = (document.getElementById("name").value.trim() || "匿名粉筆俠").slice(0, 12);
+  const idea = document.getElementById("idea").value.trim();
+  if (!idea) return alert("請先輸入一段教育理念！");
 
-  const name = (nameInput.value.trim() || "匿名粉筆俠").slice(0, 12);
-  const idea = ideaInput.value.trim();
-
-  if (!idea) {
-    alert("請先輸入一段教育理念！");
-    return;
-  }
-
+  // 計算分數
   const buzzCount = buzzWords.reduce((acc, word) => {
     const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
     const matches = idea.match(re);
     return acc + (matches ? matches.length : 0);
   }, 0);
-
   const score = Math.round(Math.min(idea.length * 0.5, 60) + buzzCount * 12 + Math.random() * 20);
   const level = levels.slice().reverse().find(l => score >= l.threshold).title;
 
-  let extraNote = "";
+  // 顯示結果
+  let tip = "";
   if (score < 40) {
-    extraNote = `<br><em style="color:#b00;">
-      分數偏低，建議多使用如「宇宙級」「AI驅動」「全人矩陣」等關鍵詞，<br>
-      並將理念描述得更長、更狂、更有架勢✨<br>
-      —— 才能突破次元邊界，獲得更高評鑑分數！
-    </em>`;
+    tip = `<br><br><span class="highlight">提示：</span>你的理念略嫌樸實，建議加入像「量子」、「素養元件庫」、「教育黑科技」等關鍵詞，會更浮誇、更有感！`;
   }
 
-  resultBox.innerHTML = `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>${extraNote}`;
+  document.getElementById("result").innerHTML =
+    `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>${tip}`;
 
+  // 抽卡
   const cardPool = [
     "高維共振者（SR）", "全人煉金魔導師（SSR）", "素養裂變導演（R）",
     "宇宙級願景召喚師（UR）", "教育黑洞鑄造師（LR）", "跨域連結術士（SSR）"
   ];
   const card = cardPool[Math.floor(Math.random() * cardPool.length)];
+  document.getElementById("card").innerHTML =
+    `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
 
-  cardBox.innerHTML = `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
-
+  // 存入 localStorage
   const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
   history.push({ name, score, level, card });
   localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
