@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>免洗教育理念產生器 ─ 浮誇MAX版</title>
+<meta charset="UTF-8">
+<link rel="icon" href="data:,">
+<style>
+  body{font-family:"Noto Sans TC",sans-serif;background:#f7f7f7;
+       display:flex;flex-direction:column;align-items:center;min-height:100vh;
+       margin:0;padding-top:40px}
+  h1   {color:#444;margin:0 0 1.2rem}
+  #idea{font-size:1.2rem;line-height:1.8rem;text-align:left;
+        margin:0 1.5rem 1.5rem;max-width:680px}
+  p    {margin:.4rem 0}
+  button{padding:.6rem 1.4rem;font-size:1rem;border:none;border-radius:8px;cursor:pointer;
+         box-shadow:0 2px 6px rgba(0,0,0,.15);margin:.4rem}
+  button:hover{box-shadow:0 4px 10px rgba(0,0,0,.20)}
+  small{color:#888;margin-top:.6rem}
+  /* ===== 金字塔 ===== */
+  #pyramid{margin:2rem auto 1rem;display:flex;flex-direction:column;align-items:center;gap:.2rem}
+  .layer{border:1px solid #666;border-radius:4px;padding:.4rem .6rem;text-align:center;background:#fff}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<h1>🎲 免洗教育理念產生器</h1>
+
+<div id="idea">點「再來一發」以量子級速度產生教育玄學！</div>
+
+<div>
+  <button onclick="generate()">再來一發</button>
+  <button onclick="generatePyramid()">生成策略金字塔 PNG</button>
+</div>
+<small id="score"></small>
+
+<!-- 金字塔顯示區 -->
+<div id="pyramid"></div>
+<div id="pyr-out"></div>
+
+<script>
+/* ===== 浮誇詞庫 MAX ===== */
+const adj = [
+  "未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙","頂規旗艦",
+  "𓆏級（看不懂但好像厲害）","AI 驅動","區塊鏈化","四倍速"
+];
+const noun = [
+  "學習生態系","人才煉金術","智慧雲端校園","真·全人發展矩陣",
+  "素養元件庫","跨域共榮實驗場","潛能加速器","教育黑科技"
+];
+const verb = [
+  "共振增幅","鏈結升頻","超頻疊加","原子級雕塑","深度賦靈",
+  "裂變式擴散","精準導入","高維封裝","雲端轉印","量化亮化"
+];
+const concl = [
+  "點燃未來 10⁹ 種可能","快速對接宇宙共識","實現教育 singularity",
+  "直升全球競爭力天花板","加速邁向星際文明","將想像力 IPO",
+  "讓每一個靈魂都 GPU 化並上雲","同步世界韌性座標"
+];
+
+/* ===== 工具：隨機取值 ===== */
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ===== 超浮誇三段式理念產生器 ===== */
+function sentence(){
+  return `以<strong>${pick(adj)}</strong>視野，對準<strong>${pick(noun)}</strong>，` +
+         `${pick(verb)}，${pick(concl)}`;
+}
+
+function generate(){
+  const html = `
+    <p>${sentence()}。</p>
+    <p>${sentence()}。</p>
+    <p>${sentence()}。</p>
+    <p><em>—— 我們正重新定義教育的邊界</em></p>
+  `;
+  document.getElementById("idea").innerHTML = html;
+  document.getElementById("score").textContent =
+    "浮誇指數：" + (90 + Math.floor(Math.random()*10)) + "%";
+}
+
+/* ===== 策略金字塔產生器（沿用原 pick()） ===== */
+function generatePyramid(){
+  const pyr = document.getElementById("pyramid");
+  pyr.innerHTML = "";
+  const layers = [
+    {label:"願景 Vision",  txt:`${pick(adj)}的${pick(noun)}`},
+    {label:"使命 Mission", txt:`${pick(verb)}${pick(noun)}`},
+    {label:"策略 Strategy",txt:`${pick(adj)}${pick(verb)}`},
+    {label:"行動 Action",  txt:`${pick(verb)}${pick(noun)}計畫`},
+    {label:"措施 Tactics", txt:`${pick(verb)}${pick(noun)}方案`}
+  ];
+  layers.forEach((L,i)=>{
+    const div=document.createElement("div");
+    div.className="layer";
+    div.style.width=(60+i*10)+"%";
+    div.innerHTML=`<strong>${L.label}</strong><br>${L.txt}`;
+    pyr.appendChild(div);
+  });
+
+  html2canvas(pyr).then(canvas=>{
+    const out=document.getElementById("pyr-out");
+    out.innerHTML="";
+    out.appendChild(canvas);
+    const link=document.createElement("a");
+    link.download="strategy-pyramid.png";
+    link.href=canvas.toDataURL();
+    link.textContent="下載 PNG 圖片";
+    link.style.display="inline-block";
+    link.style.marginTop=".8rem";
+    out.appendChild(link);
+  });
+}
+
+/* 頁面載入先來一發 */
+generate();
+</script>
+
+</body>
+</html>
