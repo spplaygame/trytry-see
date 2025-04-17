@@ -1,169 +1,135 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>教育浮誇升官大作戰 │ EDU Rank Rush</title>
+  <meta charset="UTF-8" />
+  <title>教育浮誇升官大作戰</title>
   <style>
     body {
       font-family: "Noto Sans TC", sans-serif;
-      background: #f5f7fa;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 40px;
-    }
-    h1, h2, h3 {
-      color: #334;
-      margin: 0.4rem 0;
+      background: #fdfdfd;
+      color: #333;
+      padding: 2em;
+      max-width: 720px;
+      margin: auto;
     }
     textarea, input {
-      font-family: inherit;
+      width: 100%;
+      margin-bottom: 1em;
+      padding: 0.6em;
       font-size: 1rem;
-      width: 90%;
-      max-width: 620px;
     }
     button {
-      padding: 0.6rem 1.4rem;
+      padding: 0.5em 1em;
       font-size: 1rem;
-      border: none;
-      border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      margin-top: 0.6rem;
+      margin-bottom: 1.5em;
     }
-    button:hover {
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    h2 {
+      margin-top: 2em;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.3em;
     }
-    #rateResult {
-      margin-top: 1rem;
-      font-size: 1.2rem;
+    .card {
+      font-size: 1.2em;
+      background: #f2f2f2;
+      padding: 1em;
+      border-radius: 0.5em;
+      margin: 1em 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .highlight {
+      color: #d93;
+      font-weight: bold;
+    }
+    ul {
+      padding-left: 1.5em;
     }
   </style>
 </head>
 <body>
+  <h1>✨ 教育浮誇升官大作戰 ✨</h1>
 
-<h1>教育浮誇升官大作戰</h1>
-<p>寫下一句教育口號，看看你能不能一步封神！</p>
+  <label for="name">暱稱：</label>
+  <input id="name" placeholder="匿名粉筆俠"/>
 
-<label>玩家名稱：
-  <input id="playerName" placeholder="暱稱（預設匿名粉筆俠）">
-</label><br>
+  <label for="idea">輸入你的教育理念：</label>
+  <textarea id="idea" rows="4" placeholder="在學習生態系中鍛造全人發展矩陣..."></textarea>
 
-<textarea id="userIdea" rows="4" placeholder="把你的教育理念貼在這裡"></textarea><br>
-<button onclick="rateIdea()">評鑑！</button>
+  <button onclick="evaluate()">開始評鑑！</button>
 
-<div id="rateResult"></div>
+  <div id="result" class="card"></div>
 
-<h3>🏆 排行榜（所有玩家）</h3>
-<ol id="leaderboard"></ol>
+  <h2>🎰 Buzzword 抽卡結果</h2>
+  <div id="card" class="card"></div>
+
+  <h2>📚 個人成就展示牆</h2>
+  <ul id="history"></ul>
 
 <script>
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxqXVMMBu2XokbXAlrQgk9OE5qYag-W7YAO-ZlRMc2kQmzM8eznRsg84XLcfT2d6tj2/exec';
-
-const buzzWords = ["未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙",
-"頂規旗艦","𓆏級","AI 驅動","區塊鏈化","四倍速","學習生態系",
-"人才煉金術","智慧雲端校園","真·全人發展矩陣","素養元件庫",
-"跨域共榮實驗場","潛能加速器","教育黑科技","共振增幅","鏈結升頻",
-"超頻疊加","原子級雕塑","深度賦靈","裂變式擴散","精準導入","高維封裝",
-"雲端轉印","量化亮化"];
-
-function buzzCount(str) {
-  let n = 0;
-  buzzWords.forEach(w => {
-    const re = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi");
-    const m = str.match(re);
-    if (m) n += m.length;
-  });
-  return n;
-}
-
-const officeLevel = [
-  { title: "粉筆見習煉金學徒", threshold: 0 },
-  { title: "課堂維度微調工程師", threshold: 50 },
-  { title: "素養裂變特攻隊長", threshold: 90 },
-  { title: "校園量子共振策展官", threshold: 130 },
-  { title: "跨域超頻領航司令", threshold: 170 },
-  { title: "全息教育首席煉丹師", threshold: 210 },
-  { title: "星際學習艦隊司令官", threshold: 250 },
-  { title: "超維度終極教育天尊", threshold: 300 }
+const buzzWords = [
+  "未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙","頂規旗艦",
+  "𓆏級","AI 驅動","區塊鏈化","四倍速","學習生態系","人才煉金術",
+  "智慧雲端校園","真·全人發展矩陣","素養元件庫","潛能加速器",
+  "教育黑科技","共振增幅","鏈結升頻","高維封裝","深度賦靈","裂變式擴散"
 ];
 
-const commentBank = {
-  poor: [
-    "這句理念乾到掉渣，學生可能先睡一輪。",
-    "寫得跟便條紙差不多長，再用力點吧！",
-    "老師看到會懷疑你按錯貼上鍵。"
-  ],
-  ok: [
-    "有點料，但還不夠讓校長站起來鼓掌。",
-    "方向對了，就是火力弱了些。",
-    "再灑一把關鍵字胡椒粉會更香。"
-  ],
-  good: [
-    "哦喔～這氣勢，主任辦公室的椅子已為你暖好！",
-    "已達校長演講引用等級，再多兩句可穩升署長。",
-    "學生聽不懂沒關係，感受到宇宙洪荒的震動就夠。"
-  ],
-  god: [
-    "浮誇如斯！部長看到都要抄進白皮書！",
-    "宇宙終於迎來教育 singularity，吾輩唯有仰望。",
-    "這波操作直接把黑洞照亮，無可挑剔！"
-  ]
-};
+const levels = [
+  { threshold: 0, title: "✏️ 粉筆見習生" },
+  { threshold: 40, title: "📚 概念積木工程師" },
+  { threshold: 80, title: "🧪 素養擴增技術員" },
+  { threshold: 120, title: "🚀 教育語言煉金師" },
+  { threshold: 160, title: "🌀 超維度教育黑術師" },
+  { threshold: 200, title: "👑 終極浮誇神格召喚師" }
+];
 
-function rateIdea() {
-  const txt = document.getElementById("userIdea").value.trim();
-  const name = (document.getElementById("playerName").value.trim() || "匿名粉筆俠").slice(0, 12);
-  if (!txt) { alert("先輸入一句理念吧！"); return; }
+function evaluate() {
+  const name = (document.getElementById("name").value.trim() || "匿名粉筆俠").slice(0, 12);
+  const idea = document.getElementById("idea").value.trim();
+  if (!idea) return alert("請先輸入一段教育理念！");
 
-  const score = Math.round(Math.min(txt.length * 0.5, 60) + buzzCount(txt) * 12 + Math.random() * 20);
-  let level = officeLevel[0].title;
-  for (let i = officeLevel.length - 1; i >= 0; i--)
-    if (score >= officeLevel[i].threshold) { level = officeLevel[i].title; break; }
+  // 分數計算
+  const buzzCount = buzzWords.reduce((acc, word) => {
+    const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    const matches = idea.match(re);
+    return acc + (matches ? matches.length : 0);
+  }, 0);
+  const score = Math.round(Math.min(idea.length * 0.5, 60) + buzzCount * 12 + Math.random() * 20);
+  const level = levels.reverse().find(l => score >= l.threshold).title;
 
-  let pool;
-  if (score < 90) pool = commentBank.poor;
-  else if (score < 170) pool = commentBank.ok;
-  else if (score < 250) pool = commentBank.good;
-  else pool = commentBank.god;
+  // 顯示評鑑結果
+  document.getElementById("result").innerHTML =
+    `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>`;
 
-  const roast = pool[Math.floor(Math.random() * pool.length)];
+  // 抽卡機展示
+  const cardPool = [
+    "高維共振者（SR）", "全人煉金魔導師（SSR）", "素養裂變導演（R）",
+    "宇宙級願景召喚師（UR）", "教育黑洞鑄造師（LR）", "跨域連結術士（SSR）"
+  ];
+  const card = cardPool[Math.floor(Math.random() * cardPool.length)];
+  document.getElementById("card").innerHTML =
+    `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
 
-  document.getElementById("rateResult").innerHTML =
-    `✨ <strong>${level}</strong>（${score} 分）<br>${roast}`;
-
-  fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, score })
-  }).then(() => renderBoard());
+  // 儲存成就到 localStorage
+  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
+  history.push({ name, score, level, card });
+  localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
+  renderHistory();
 }
 
-function renderBoard() {
-  const name = (document.getElementById("playerName").value.trim() || "匿名粉筆俠").slice(0, 12);
-  fetch(`${ENDPOINT}?name=${encodeURIComponent(name)}`)
-    .then(r => r.json())
-    .then(({ leaderboard, self }) => {
-      const ol = document.getElementById('leaderboard');
-      ol.innerHTML = '';
-      leaderboard.forEach(r => {
-        const li = document.createElement('li');
-        li.innerHTML = `<strong>${r.name}</strong> — ${r.score} 分`;
-        if (self && r.name === name) li.style.color = 'red';
-        ol.appendChild(li);
-      });
-
-      if (self) {
-        document.getElementById("rateResult").innerHTML += 
-          `<br><strong>你目前排名第 ${self.rank} 名，分數：${self.score}</strong>`;
-      }
-    });
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]").slice(-10); // 顯示近10筆
+  const ul = document.getElementById("history");
+  ul.innerHTML = "";
+  history.reverse().forEach(entry => {
+    const li = document.createElement("li");
+    li.innerHTML = `${entry.name}｜${entry.score} 分｜${entry.level}｜抽到：<strong>${entry.card}</strong>`;
+    ul.appendChild(li);
+  });
 }
 
-renderBoard();
+// 初始載入展示牆
+renderHistory();
 </script>
-
 </body>
 </html>
 
