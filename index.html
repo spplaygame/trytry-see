@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>教育浮誇升官大作戰</title>
-
-  <!-- 預覽分享資訊 -->
-  <meta property="og:title" content="教育浮誇升官大作戰｜看看你可以升到哪個官位！" />
-  <meta property="og:description" content="輸入你的教育理念，評鑑分數＋浮誇官職＋Buzzword 抽卡！" />
-  <meta property="og:image" content="https://i.imgur.com/YOUR_IMAGE.png" />
-  <meta property="og:url" content="https://spplaygame.github.io/trytry-see/" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:title" content="教育浮誇升官大作戰｜你是哪種老師？" />
+  <meta property="og:description" content="輸入你的教育理念，立即獲得分數、官職、人格卡牌分析！" />
+  <meta property="og:image" content="https://i.imgur.com/your-image.png" />
+  <meta property="og:url" content="https://spplaygame.github.io/trytry-see/" />
 
   <style>
     body {
@@ -38,7 +36,7 @@
       padding-bottom: 0.3em;
     }
     .card {
-      font-size: 1.2em;
+      font-size: 1.1em;
       background: #f2f2f2;
       padding: 1em;
       border-radius: 0.5em;
@@ -70,18 +68,17 @@
 
   <div id="result" class="card"></div>
 
-  <h2>🎰 Buzzword 抽卡結果</h2>
+  <h2>🧠 教育人格卡牌分析</h2>
   <div id="card" class="card"></div>
 
   <h2>📚 個人成就展示牆</h2>
   <ul id="history"></ul>
-
 <script>
 const buzzWords = [
-  "未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙","頂規旗艦",
-  "𓆏級","AI 驅動","區塊鏈化","四倍速","學習生態系","人才煉金術",
-  "智慧雲端校園","真·全人發展矩陣","素養元件庫","潛能加速器",
-  "教育黑科技","共振增幅","鏈結升頻","高維封裝","深度賦靈","裂變式擴散"
+  "未來量子級", "全域無縫", "超維度", "宇宙級", "跨星系", "元宇宙", "頂規旗艦",
+  "𓆏級", "AI 驅動", "區塊鏈化", "四倍速", "學習生態系", "人才煉金術",
+  "智慧雲端校園", "真·全人發展矩陣", "素養元件庫", "潛能加速器",
+  "教育黑科技", "共振增幅", "鏈結升頻", "高維封裝", "深度賦靈", "裂變式擴散"
 ];
 
 const rankLevels = [
@@ -96,12 +93,80 @@ const rankLevels = [
   { threshold: 180, title: "👑 教育部長", note: "被全民檢討的神職 👑" }
 ];
 
+const personaCards = [
+  {
+    id: "rigid", card: "📐 教條派製表師（R）",
+    rule: (s, txt, buzz) => /評鑑|格式|模組|表單|請假/.test(txt)
+  },
+  {
+    id: "idealist", card: "🌸 浪漫式導師（SR）",
+    rule: (s, txt, buzz) => txt.length < 40 && buzz < 2
+  },
+  {
+    id: "influencer", card: "📲 社群經營聖手（SSR）",
+    rule: (s, txt, buzz) => /社群|自媒體/.test(txt)
+  },
+  {
+    id: "alchemist", card: "🧪 教育煉金術士（UR）",
+    rule: (s, txt, buzz) => buzz >= 5 && txt.length > 60
+  },
+  {
+    id: "ghost", card: "👻 評鑑機構幽靈（SSR）",
+    rule: (s, txt, buzz) => buzz >= 4 && s < 120
+  },
+  {
+    id: "legend", card: "🧙 傳說中的教研仙人（LR）",
+    rule: (s, txt, buzz) => s > 180 && buzz >= 6
+  },
+  {
+    id: "kpi", card: "🪙 教育 KPI 鍊金工匠（R）",
+    rule: (s, txt, buzz) => /績效|量化|資料/.test(txt)
+  },
+  {
+    id: "branding", card: "🧼 校園品牌營運師（SR）",
+    rule: (s, txt, buzz) => /願景|識別|品牌/.test(txt)
+  },
+  {
+    id: "tactic", card: "🥽 高維計畫操盤員（SSR）",
+    rule: (s, txt, buzz) => /策略|資源|操作/.test(txt)
+  },
+  {
+    id: "collab", card: "🧵 共學編織者（SR）",
+    rule: (s, txt, buzz) => /共學|互動|共備/.test(txt)
+  },
+  {
+    id: "grounded", card: "🛠️ 教育現場修補匠（R）",
+    rule: (s, txt, buzz) => buzz === 0 && txt.length > 50
+  },
+  {
+    id: "narrative", card: "🎭 劇場式敘事講師（SR）",
+    rule: (s, txt, buzz) => /敘事|情境|角色/.test(txt)
+  },
+  {
+    id: "mi", card: "🧩 多元智能探索者（SSR）",
+    rule: (s, txt, buzz) => /多元|適性|天賦/.test(txt)
+  },
+  {
+    id: "flat", card: "📉 教學低頻共振者（N）",
+    rule: (s, txt, buzz) => s < 30 && txt.length < 40
+  },
+  {
+    id: "meta", card: "🔮 元宇宙量子素養總教官（UR）",
+    rule: (s, txt, buzz) => buzz >= 8 && txt.length >= 80
+  }
+];
+function assignPersonaCard(score, idea, buzzCount) {
+  for (const p of personaCards) {
+    if (p.rule(score, idea, buzzCount)) return p.card;
+  }
+  return "🤔 尚未覺醒的教育潛能體（C）";
+}
+
 function startEvaluation() {
   const name = (document.getElementById("name").value.trim() || "匿名粉筆俠").slice(0, 12);
   const idea = document.getElementById("idea").value.trim();
   if (!idea) return alert("請先輸入一段教育理念！");
 
-  // 配分邏輯：buzzword 優先，字數補強，加入隨機性
   const buzzCount = buzzWords.reduce((acc, word) => {
     const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
     const matches = idea.match(re);
@@ -113,34 +178,27 @@ function startEvaluation() {
   const randomBonus = Math.floor(Math.random() * 20);
   const score = Math.round(baseScore + lengthBonus + randomBonus);
 
-  // 決定官職
+  // 官職計算
   const matchedRank = rankLevels.slice().reverse().find(r => score >= r.threshold);
   const rankTitle = matchedRank.title;
   const rankNote = matchedRank.note;
 
-  // 額外建議
   let tip = "";
   if (score < 40) {
-    tip = `<br><br><em style="color:#b00;">分數偏低，可多使用如「宇宙級」「AI驅動」「全人矩陣」等詞彙，<br>並將理念描述得更長、更狂、更有架勢 ✨</em>`;
+    tip = `<br><br><em style="color:#b00;">分數略低，可多使用如「宇宙級」「AI 驅動」「教育黑科技」等浮誇關鍵詞，並增加描述內容✨</em>`;
   }
 
   document.getElementById("result").innerHTML =
     `${name} 的理念總分為 <span class="highlight">${score}</span> 分<br>
-     官職預測：<strong>${rankTitle}</strong><br>
-     <em>${rankNote}</em>${tip}`;
+     官職預測：<strong>${rankTitle}</strong><br><em>${rankNote}</em>${tip}`;
 
-  // 抽卡
-  const cardPool = [
-    "高維共振者（SR）", "全人煉金魔導師（SSR）", "素養裂變導演（R）",
-    "宇宙級願景召喚師（UR）", "教育黑洞鑄造師（LR）", "跨域連結術士（SSR）"
-  ];
-  const card = cardPool[Math.floor(Math.random() * cardPool.length)];
-  document.getElementById("card").innerHTML =
-    `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
+  // 教育人格卡牌
+  const persona = assignPersonaCard(score, idea, buzzCount);
+  document.getElementById("card").innerHTML = `人格卡牌判定結果：<strong>${persona}</strong>`;
 
   // 儲存到 localStorage
   const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
-  history.push({ name, score, rankTitle, card });
+  history.push({ name, score, rank: rankTitle, persona });
   localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
   renderHistory();
 }
@@ -151,7 +209,7 @@ function renderHistory() {
   ul.innerHTML = "";
   history.reverse().forEach(entry => {
     const li = document.createElement("li");
-    li.innerHTML = `${entry.name}｜${entry.score} 分｜${entry.rankTitle}｜抽到：<strong>${entry.card}</strong>`;
+    li.innerHTML = `${entry.name}｜${entry.score} 分｜${entry.rank}｜<strong>${entry.persona}</strong>`;
     ul.appendChild(li);
   });
 }
