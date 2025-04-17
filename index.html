@@ -5,7 +5,7 @@
   <title>教育浮誇升官大作戰</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta property="og:title" content="教育浮誇升官大作戰｜你是哪種老師？" />
-  <meta property="og:description" content="輸入你的教育理念，立即獲得分數、官職、人格卡牌分析！" />
+  <meta property="og:description" content="輸入教育理念，立即獲得分數、官職與人格卡分析！" />
   <meta property="og:image" content="https://i.imgur.com/your-image.png" />
   <meta property="og:url" content="https://spplaygame.github.io/trytry-see/" />
 
@@ -62,7 +62,7 @@
   <input id="name" placeholder="匿名粉筆俠"/>
 
   <label for="idea">輸入你的教育理念：</label>
-  <textarea id="idea" rows="4" placeholder="在學習生態系中鍛造全人發展矩陣..."></textarea>
+  <textarea id="idea" rows="4" placeholder="以素養導向課程設計結合生活教育..."></textarea>
 
   <button onclick="startEvaluation()">開始評鑑！</button>
 
@@ -73,12 +73,14 @@
 
   <h2>📚 個人成就展示牆</h2>
   <ul id="history"></ul>
+
 <script>
 const buzzWords = [
-  "未來量子級", "全域無縫", "超維度", "宇宙級", "跨星系", "元宇宙", "頂規旗艦",
-  "𓆏級", "AI 驅動", "區塊鏈化", "四倍速", "學習生態系", "人才煉金術",
-  "智慧雲端校園", "真·全人發展矩陣", "素養元件庫", "潛能加速器",
-  "教育黑科技", "共振增幅", "鏈結升頻", "高維封裝", "深度賦靈", "裂變式擴散"
+  "素養導向","學習歷程","課程協作","學習扶助","課綱核心","校訂課程","彈性學習時間","跨領域",
+  "生活教育","學生自治","服務學習","體育課程","高關懷學生","防制霸凌","午餐營養","健康促進",
+  "生涯發展","親師溝通","情緒教育","心理支持","個別輔導","三級預防","人際關係","危機處理",
+  "校園安全","校舍整修","物品報修","環境永續","總務處運作","防災演練","門禁管制",
+  "數位學習","翻轉教學","自主學習","多元評量","教育部指引","教育白皮書"
 ];
 
 const rankLevels = [
@@ -92,7 +94,6 @@ const rankLevels = [
   { threshold: 160, title: "🌀 教育次長", note: "見證政策起落的男人／女人" },
   { threshold: 180, title: "👑 教育部長", note: "被全民檢討的神職 👑" }
 ];
-
 const personaCards = [
   {
     id: "rigid", card: "📐 教條派製表師（R）",
@@ -155,6 +156,7 @@ const personaCards = [
     rule: (s, txt, buzz) => buzz >= 8 && txt.length >= 80
   }
 ];
+
 function assignPersonaCard(score, idea, buzzCount) {
   for (const p of personaCards) {
     if (p.rule(score, idea, buzzCount)) return p.card;
@@ -178,25 +180,22 @@ function startEvaluation() {
   const randomBonus = Math.floor(Math.random() * 20);
   const score = Math.round(baseScore + lengthBonus + randomBonus);
 
-  // 官職計算
   const matchedRank = rankLevels.slice().reverse().find(r => score >= r.threshold);
   const rankTitle = matchedRank.title;
   const rankNote = matchedRank.note;
 
   let tip = "";
   if (score < 40) {
-    tip = `<br><br><em style="color:#b00;">分數略低，可多使用如「宇宙級」「AI 驅動」「教育黑科技」等浮誇關鍵詞，並增加描述內容✨</em>`;
+    tip = `<br><br><em style="color:#b00;">分數略低，建議加入如「素養導向」「生涯發展」「課程協作」等政策語彙，並補強理念內容。</em>`;
   }
 
   document.getElementById("result").innerHTML =
     `${name} 的理念總分為 <span class="highlight">${score}</span> 分<br>
      官職預測：<strong>${rankTitle}</strong><br><em>${rankNote}</em>${tip}`;
 
-  // 教育人格卡牌
   const persona = assignPersonaCard(score, idea, buzzCount);
   document.getElementById("card").innerHTML = `人格卡牌判定結果：<strong>${persona}</strong>`;
 
-  // 儲存到 localStorage
   const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
   history.push({ name, score, rank: rankTitle, persona });
   localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
@@ -218,3 +217,4 @@ renderHistory();
 </script>
 </body>
 </html>
+
