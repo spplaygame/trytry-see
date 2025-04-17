@@ -3,6 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>教育浮誇升官大作戰</title>
+
+  <!-- 預覽分享資訊 -->
+  <meta property="og:title" content="教育浮誇升官大作戰｜看看你可以升到哪個官位！" />
+  <meta property="og:description" content="輸入你的教育理念，評鑑分數＋浮誇官職＋Buzzword 抽卡！" />
+  <meta property="og:image" content="https://i.imgur.com/YOUR_IMAGE.png" />
+  <meta property="og:url" content="https://spplaygame.github.io/trytry-see/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
       font-family: "Noto Sans TC", sans-serif;
@@ -44,6 +52,9 @@
     ul {
       padding-left: 1.5em;
     }
+    em {
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -73,13 +84,16 @@ const buzzWords = [
   "教育黑科技","共振增幅","鏈結升頻","高維封裝","深度賦靈","裂變式擴散"
 ];
 
-const levels = [
-  { threshold: 0, title: "✏️ 粉筆見習生" },
-  { threshold: 40, title: "📚 概念積木工程師" },
-  { threshold: 80, title: "🧪 素養擴增技術員" },
-  { threshold: 120, title: "🚀 教育語言煉金師" },
-  { threshold: 160, title: "🌀 超維度教育黑術師" },
-  { threshold: 200, title: "👑 終極浮誇神格召喚師" }
+const rankLevels = [
+  { threshold: 0, title: "🧹 代理代課老師", note: "還沒領編制，先加油 💪" },
+  { threshold: 40, title: "📒 專任教師", note: "教案堆積如山中…" },
+  { threshold: 60, title: "🗂 教學組長", note: "不上課卻更忙的那位" },
+  { threshold: 80, title: "🧯 學務主任", note: "被家長跟學生兩頭燒 🔥" },
+  { threshold: 100, title: "🏫 校長", note: "校務繁忙，但想退休 🧓" },
+  { threshold: 120, title: "🕵️ 督學", note: "傳說中的突襲檢查者 👀" },
+  { threshold: 140, title: "📊 教育司長", note: "講話要押韻、報告不能少字 ✍️" },
+  { threshold: 160, title: "🌀 教育次長", note: "見證政策起落的男人／女人" },
+  { threshold: 180, title: "👑 教育部長", note: "被全民檢討的神職 👑" }
 ];
 
 function startEvaluation() {
@@ -87,23 +101,33 @@ function startEvaluation() {
   const idea = document.getElementById("idea").value.trim();
   if (!idea) return alert("請先輸入一段教育理念！");
 
-  // 計算分數
+  // 配分邏輯：buzzword 優先，字數補強，加入隨機性
   const buzzCount = buzzWords.reduce((acc, word) => {
     const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
     const matches = idea.match(re);
     return acc + (matches ? matches.length : 0);
   }, 0);
-  const score = Math.round(Math.min(idea.length * 0.5, 60) + buzzCount * 12 + Math.random() * 20);
-  const level = levels.slice().reverse().find(l => score >= l.threshold).title;
 
-  // 顯示結果
+  const baseScore = buzzCount * 25;
+  const lengthBonus = Math.min(idea.length, 60) * 0.3;
+  const randomBonus = Math.floor(Math.random() * 20);
+  const score = Math.round(baseScore + lengthBonus + randomBonus);
+
+  // 決定官職
+  const matchedRank = rankLevels.slice().reverse().find(r => score >= r.threshold);
+  const rankTitle = matchedRank.title;
+  const rankNote = matchedRank.note;
+
+  // 額外建議
   let tip = "";
   if (score < 40) {
-    tip = `<br><br><span class="highlight">提示：</span>你的理念略嫌樸實，建議加入像「量子」、「素養元件庫」、「教育黑科技」等關鍵詞，會更浮誇、更有感！`;
+    tip = `<br><br><em style="color:#b00;">分數偏低，可多使用如「宇宙級」「AI驅動」「全人矩陣」等詞彙，<br>並將理念描述得更長、更狂、更有架勢 ✨</em>`;
   }
 
   document.getElementById("result").innerHTML =
-    `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>${tip}`;
+    `${name} 的理念總分為 <span class="highlight">${score}</span> 分<br>
+     官職預測：<strong>${rankTitle}</strong><br>
+     <em>${rankNote}</em>${tip}`;
 
   // 抽卡
   const cardPool = [
@@ -114,9 +138,9 @@ function startEvaluation() {
   document.getElementById("card").innerHTML =
     `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
 
-  // 存入 localStorage
+  // 儲存到 localStorage
   const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
-  history.push({ name, score, level, card });
+  history.push({ name, score, rankTitle, card });
   localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
   renderHistory();
 }
@@ -127,7 +151,7 @@ function renderHistory() {
   ul.innerHTML = "";
   history.reverse().forEach(entry => {
     const li = document.createElement("li");
-    li.innerHTML = `${entry.name}｜${entry.score} 分｜${entry.level}｜抽到：<strong>${entry.card}</strong>`;
+    li.innerHTML = `${entry.name}｜${entry.score} 分｜${entry.rankTitle}｜抽到：<strong>${entry.card}</strong>`;
     ul.appendChild(li);
   });
 }
