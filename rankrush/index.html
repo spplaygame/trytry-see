@@ -39,12 +39,6 @@
       margin-top: 1rem;
       font-size: 1.2rem;
     }
-    #firework {
-      font-size: 3rem;
-      line-height: 1.2;
-      display: none;
-      margin-top: 0.4rem;
-    }
   </style>
 </head>
 <body>
@@ -60,7 +54,6 @@
 <button onclick="rateIdea()">評鑑！</button>
 
 <div id="rateResult"></div>
-<div id="firework">🎆🎇🎆</div>
 
 <h3>🏆 排行榜（所有玩家）</h3>
 <ol id="leaderboard"></ol>
@@ -69,11 +62,21 @@
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxqXVMMBu2XokbXAlrQgk9OE5qYag-W7YAO-ZlRMc2kQmzM8eznRsg84XLcfT2d6tj2/exec';
 
 const buzzWords = ["未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙",
-"頂規旗艦","𓆏級（看不懂但好像厲害）","AI 驅動","區塊鏈化","四倍速",
-"學習生態系","人才煉金術","智慧雲端校園","真·全人發展矩陣",
-"素養元件庫","跨域共榮實驗場","潛能加速器","教育黑科技",
-"共振增幅","鏈結升頻","超頻疊加","原子級雕塑","深度賦靈",
-"裂變式擴散","精準導入","高維封裝","雲端轉印","量化亮化"];
+"頂規旗艦","𓆏級","AI 驅動","區塊鏈化","四倍速","學習生態系",
+"人才煉金術","智慧雲端校園","真·全人發展矩陣","素養元件庫",
+"跨域共榮實驗場","潛能加速器","教育黑科技","共振增幅","鏈結升頻",
+"超頻疊加","原子級雕塑","深度賦靈","裂變式擴散","精準導入","高維封裝",
+"雲端轉印","量化亮化"];
+
+function buzzCount(str) {
+  let n = 0;
+  buzzWords.forEach(w => {
+    const re = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi");
+    const m = str.match(re);
+    if (m) n += m.length;
+  });
+  return n;
+}
 
 const officeLevel = [
   { title: "粉筆見習煉金學徒", threshold: 0 },
@@ -109,22 +112,6 @@ const commentBank = {
   ]
 };
 
-function buzzCount(str) {
-  let n = 0;
-  buzzWords.forEach(w => {
-    const re = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi");
-    const m = str.match(re);
-    if (m) n += m.length;
-  });
-  return n;
-}
-
-function fireworks(ms = 2000) {
-  const fw = document.getElementById("firework");
-  fw.style.display = "block";
-  setTimeout(() => fw.style.display = "none", ms);
-}
-
 function rateIdea() {
   const txt = document.getElementById("userIdea").value.trim();
   const name = (document.getElementById("playerName").value.trim() || "匿名粉筆俠").slice(0, 12);
@@ -142,7 +129,6 @@ function rateIdea() {
   else pool = commentBank.god;
 
   const roast = pool[Math.floor(Math.random() * pool.length)];
-  if (level === officeLevel.at(-1).title) fireworks();
 
   document.getElementById("rateResult").innerHTML =
     `✨ <strong>${level}</strong>（${score} 分）<br>${roast}`;
@@ -150,28 +136,35 @@ function rateIdea() {
   fetch(ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, score, idea: txt })
+    body: JSON.stringify({ name, score })
   }).then(() => renderBoard());
 }
 
 function renderBoard() {
-  fetch(ENDPOINT)
+  const name = (document.getElementById("playerName").value.trim() || "匿名粉筆俠").slice(0, 12);
+  fetch(`${ENDPOINT}?name=${encodeURIComponent(name)}`)
     .then(r => r.json())
-    .then(rows => {
-      rows.sort((a, b) => b[1] - a[1]); // 分數高到低排序
+    .then(({ leaderboard, self }) => {
       const ol = document.getElementById('leaderboard');
       ol.innerHTML = '';
-      rows.forEach(r => {
-        const snip = (r[2] || "").slice(0, 40) + (r[2]?.length > 40 ? "…" : "");
+      leaderboard.forEach(r => {
         const li = document.createElement('li');
-        li.innerHTML = `<strong>${r[0]}</strong> — ${r[1]} 分<br><small>${snip}</small>`;
+        li.innerHTML = `<strong>${r.name}</strong> — ${r.score} 分`;
+        if (self && r.name === name) li.style.color = 'red';
         ol.appendChild(li);
       });
+
+      if (self) {
+        document.getElementById("rateResult").innerHTML += 
+          `<br><strong>你目前排名第 ${self.rank} 名，分數：${self.score}</strong>`;
+      }
     });
 }
 
-renderBoard(); // 載入頁面時執行
+renderBoard();
 </script>
+
 </body>
 </html>
+
 
