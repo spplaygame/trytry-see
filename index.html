@@ -44,6 +44,9 @@
     ul {
       padding-left: 1.5em;
     }
+    em {
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -96,7 +99,6 @@ function evaluate() {
     return;
   }
 
-  // 分數計算
   const buzzCount = buzzWords.reduce((acc, word) => {
     const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
     const matches = idea.match(re);
@@ -106,22 +108,17 @@ function evaluate() {
   const score = Math.round(Math.min(idea.length * 0.5, 60) + buzzCount * 12 + Math.random() * 20);
   const level = levels.slice().reverse().find(l => score >= l.threshold).title;
 
-  // 若分數太低，顯示建議語句
   let extraNote = "";
   if (score < 40) {
-    extraNote = `
-      <br><em style="color:#b00;">
-        分數偏低，建議多使用如「宇宙級」「AI驅動」「全人矩陣」等關鍵詞，<br>
-        並將理念描述得更長、更狂、更有架勢✨<br>
-        —— 才能突破次元邊界，獲得更高評鑑分數！
-      </em>`;
+    extraNote = `<br><em style="color:#b00;">
+      分數偏低，建議多使用如「宇宙級」「AI驅動」「全人矩陣」等關鍵詞，<br>
+      並將理念描述得更長、更狂、更有架勢✨<br>
+      —— 才能突破次元邊界，獲得更高評鑑分數！
+    </em>`;
   }
 
-  // 顯示評鑑結果
-  resultBox.innerHTML =
-    `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>${extraNote}`;
+  resultBox.innerHTML = `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>${extraNote}`;
 
-  // 抽卡展示
   const cardPool = [
     "高維共振者（SR）", "全人煉金魔導師（SSR）", "素養裂變導演（R）",
     "宇宙級願景召喚師（UR）", "教育黑洞鑄造師（LR）", "跨域連結術士（SSR）"
@@ -130,7 +127,6 @@ function evaluate() {
 
   cardBox.innerHTML = `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
 
-  // 儲存成就
   const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
   history.push({ name, score, level, card });
   localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
@@ -138,7 +134,7 @@ function evaluate() {
 }
 
 function renderHistory() {
-  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]").slice(-10); // 只顯示10筆
+  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]").slice(-10);
   const ul = document.getElementById("history");
   ul.innerHTML = "";
   history.reverse().forEach(entry => {
@@ -148,7 +144,6 @@ function renderHistory() {
   });
 }
 
-// 初始化載入
 renderHistory();
 </script>
 </body>
