@@ -55,7 +55,7 @@
   <label for="idea">輸入你的教育理念：</label>
   <textarea id="idea" rows="4" placeholder="在學習生態系中鍛造全人發展矩陣..."></textarea>
 
-  <button id="startBtn">開始評鑑！</button>
+  <button onclick="evaluate()">開始評鑑！</button>
 
   <div id="result" class="card"></div>
 
@@ -65,78 +65,92 @@
   <h2>📚 個人成就展示牆</h2>
   <ul id="history"></ul>
 
-  <script>
-    const buzzWords = [
-      "未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙","頂規旗艦",
-      "𓆏級","AI 驅動","區塊鏈化","四倍速","學習生態系","人才煉金術",
-      "智慧雲端校園","真·全人發展矩陣","素養元件庫","潛能加速器",
-      "教育黑科技","共振增幅","鏈結升頻","高維封裝","深度賦靈","裂變式擴散"
-    ];
+<script>
+const buzzWords = [
+  "未來量子級","全域無縫","超維度","宇宙級","跨星系","元宇宙","頂規旗艦",
+  "𓆏級","AI 驅動","區塊鏈化","四倍速","學習生態系","人才煉金術",
+  "智慧雲端校園","真·全人發展矩陣","素養元件庫","潛能加速器",
+  "教育黑科技","共振增幅","鏈結升頻","高維封裝","深度賦靈","裂變式擴散"
+];
 
-    const levels = [
-      { threshold: 0, title: "✏️ 粉筆見習生" },
-      { threshold: 40, title: "📚 概念積木工程師" },
-      { threshold: 80, title: "🧪 素養擴增技術員" },
-      { threshold: 120, title: "🚀 教育語言煉金師" },
-      { threshold: 160, title: "🌀 超維度教育黑術師" },
-      { threshold: 200, title: "👑 終極浮誇神格召喚師" }
-    ];
+const levels = [
+  { threshold: 0, title: "✏️ 粉筆見習生" },
+  { threshold: 40, title: "📚 概念積木工程師" },
+  { threshold: 80, title: "🧪 素養擴增技術員" },
+  { threshold: 120, title: "🚀 教育語言煉金師" },
+  { threshold: 160, title: "🌀 超維度教育黑術師" },
+  { threshold: 200, title: "👑 終極浮誇神格召喚師" }
+];
 
-    function evaluate() {
-      const nameInput = document.getElementById("name");
-      const ideaInput = document.getElementById("idea");
-      const resultBox = document.getElementById("result");
-      const cardBox = document.getElementById("card");
+function evaluate() {
+  const nameInput = document.getElementById("name");
+  const ideaInput = document.getElementById("idea");
+  const resultBox = document.getElementById("result");
+  const cardBox = document.getElementById("card");
 
-      const name = (nameInput.value.trim() || "匿名粉筆俠").slice(0, 12);
-      const idea = ideaInput.value.trim();
+  const name = (nameInput.value.trim() || "匿名粉筆俠").slice(0, 12);
+  const idea = ideaInput.value.trim();
 
-      if (!idea) {
-        alert("請先輸入一段教育理念！");
-        return;
-      }
+  if (!idea) {
+    alert("請先輸入一段教育理念！");
+    return;
+  }
 
-      const buzzCount = buzzWords.reduce((acc, word) => {
-        const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-        const matches = idea.match(re);
-        return acc + (matches ? matches.length : 0);
-      }, 0);
+  // 分數計算
+  const buzzCount = buzzWords.reduce((acc, word) => {
+    const re = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    const matches = idea.match(re);
+    return acc + (matches ? matches.length : 0);
+  }, 0);
 
-      const score = Math.round(Math.min(idea.length * 0.5, 60) + buzzCount * 12 + Math.random() * 20);
-      const level = levels.slice().reverse().find(l => score >= l.threshold).title;
+  const score = Math.round(Math.min(idea.length * 0.5, 60) + buzzCount * 12 + Math.random() * 20);
+  const level = levels.slice().reverse().find(l => score >= l.threshold).title;
 
-      resultBox.innerHTML =
-        `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>`;
+  // 若分數太低，顯示建議語句
+  let extraNote = "";
+  if (score < 40) {
+    extraNote = `
+      <br><em style="color:#b00;">
+        分數偏低，建議多使用如「宇宙級」「AI驅動」「全人矩陣」等關鍵詞，<br>
+        並將理念描述得更長、更狂、更有架勢✨<br>
+        —— 才能突破次元邊界，獲得更高評鑑分數！
+      </em>`;
+  }
 
-      const cardPool = [
-        "高維共振者（SR）", "全人煉金魔導師（SSR）", "素養裂變導演（R）",
-        "宇宙級願景召喚師（UR）", "教育黑洞鑄造師（LR）", "跨域連結術士（SSR）"
-      ];
-      const card = cardPool[Math.floor(Math.random() * cardPool.length)];
+  // 顯示評鑑結果
+  resultBox.innerHTML =
+    `${name} 的理念總分是 <span class="highlight">${score}</span> 分<br>稱號：<strong>${level}</strong>${extraNote}`;
 
-      cardBox.innerHTML =
-        `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
+  // 抽卡展示
+  const cardPool = [
+    "高維共振者（SR）", "全人煉金魔導師（SSR）", "素養裂變導演（R）",
+    "宇宙級願景召喚師（UR）", "教育黑洞鑄造師（LR）", "跨域連結術士（SSR）"
+  ];
+  const card = cardPool[Math.floor(Math.random() * cardPool.length)];
 
-      const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
-      history.push({ name, score, level, card });
-      localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
-      renderHistory();
-    }
+  cardBox.innerHTML = `你剛剛抽到了：<span class="highlight">${card}</span> 🎉`;
 
-    function renderHistory() {
-      const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]").slice(-10);
-      const ul = document.getElementById("history");
-      ul.innerHTML = "";
-      history.reverse().forEach(entry => {
-        const li = document.createElement("li");
-        li.innerHTML = `${entry.name}｜${entry.score} 分｜${entry.level}｜抽到：<strong>${entry.card}</strong>`;
-        ul.appendChild(li);
-      });
-    }
+  // 儲存成就
+  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]");
+  history.push({ name, score, level, card });
+  localStorage.setItem("eduBuzzHistory", JSON.stringify(history));
+  renderHistory();
+}
 
-    document.getElementById("startBtn").addEventListener("click", evaluate);
-    renderHistory();
-  </script>
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem("eduBuzzHistory") || "[]").slice(-10); // 只顯示10筆
+  const ul = document.getElementById("history");
+  ul.innerHTML = "";
+  history.reverse().forEach(entry => {
+    const li = document.createElement("li");
+    li.innerHTML = `${entry.name}｜${entry.score} 分｜${entry.level}｜抽到：<strong>${entry.card}</strong>`;
+    ul.appendChild(li);
+  });
+}
+
+// 初始化載入
+renderHistory();
+</script>
 </body>
 </html>
 
